@@ -1,4 +1,4 @@
 # game
-comp sci FSE
-Ok I'm in
+comp sci FSE\n
+Ok I'm in\n
 Reading this?
