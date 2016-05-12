@@ -42,15 +42,10 @@ class Player:
             char.y=400
             char.step=True
         char.vy+=0.5
-    """    
-    def check(char,obj2):
-        space=20 
-        if dist(char.x,obj2.x,char.y,obj2.y)<space:
-            return True
-    """    
+      
     def hit(char):
         char.health-=1
-        return char.health
+        char.health=min(100,char.health)
     
     #--DRAWING STUFF--        
     def draw(char):
@@ -91,13 +86,14 @@ def dist(x1,x2,y1,y2):
 
 def checkCollide(obj1,pic1,obj2,pic2):
     space=pic2.get_width()//2+pic1.get_width()//2
-    if dist(obj1.x,obj2.x,obj1.y,obj2.y)<space:
+    if dist(obj1.x,obj2.x,obj1.y,obj2.y)<=space:
         return True
 
-def check(char,obj2,space):
-    if dist(char.x,obj2.x,char.y,obj2.y)<space:
+def check(obj1,obj2,space):
+    if dist(obj1.x,obj2.x,obj1.y,obj2.y)<=space:
         return True
-    
+    return False
+
 #--OBJECTS--    
 class Torch:
     def __init__(self):
@@ -105,14 +101,13 @@ class Torch:
    
     def torchTime(self,start):
         now=datetime.now()
-        if now.hour*3600+now.minute*60+now.second-10>=start.hour*3600+start.minute*60+start.second:
+        if now.hour*3600+now.minute*60+now.second-60>=start.hour*3600+start.minute*60+start.second:
             return True
-        else:
-            return False
+        return False
     
     def torchCount(self):
         now=datetime.now()
-        self.num=10-(now.hour*3600+now.minute*60+now.second-(self.start.hour*3600+self.start.minute*60+self.start.second))
+        self.num=60-(now.hour*3600+now.minute*60+now.second-(self.start.hour*3600+self.start.minute*60+self.start.second))
         return self.num
    
     def torch(self,pic,x,y): #takes pic, position and makes transparent black screen with size
@@ -127,16 +122,34 @@ class Torch:
         screen.blit(dark,(0,0))
         #replace with photoshop and transparent circle pic
 
+class medKit:
+    def __init__(self,x,y):
+        #self.worth=0
+        self.worth=20
+        self.x=x
+        self.y=y
+        self.got=False #False if not collected yet
+        
+    def gain(self,char):
+        if check(self,char,15)==True and self.got==False: #collides and not collected
+            char.health+=self.worth
+            char.health=min(100,char.health)
+            self.got=True #True means has been collected
+            
+    def draw(self):
+        if self.got==False: #only draws if not collected
+            draw.circle(screen,(0,255,0),(self.x,self.y),5)
+        
 #--ENDS GAME--
 def gameEnd():
-    if t.torchCount()==0 or me.hit()==0:
+    if me.health==0: #also count down torches later
         return True
-    else:
-        return False
+    return False
     
 dude=Enemy(randint(100,700),400)
 me=Player()
 t=Torch()
+kit=medKit(600,400)
 running=True
 myClock=time.Clock()
 hbar=(50,50,100,20)
@@ -147,12 +160,13 @@ while running:
             running=False
     me.move()
     dude.move(me)
+    kit.gain(me)
     
     if check(me,dude,20)==True:
         dude.x=dude.x-50
         me.hit()
-        hbar=(50,50,me.hit(),20)
-    
+        hbar=(50,50,me.health,20)
+
     if t.torchTime(t.start)!=True:
         t.torch(pic,me.x,me.y)
     else:
@@ -160,13 +174,14 @@ while running:
         
     me.draw()
     dude.draw()
+    kit.draw()
     draw.rect(screen,(255,255,255),(50,50,100,20))
     draw.rect(screen,(255,0,0),hbar)
     screen.blit((text.render(str(t.torchCount()),True,(255,255,255))),(50,80))
     display.flip()
-
-    #if gameEnd()==True:
-        #break      
+    print(me.health,kit.got)
+    if gameEnd()==True:
+        break      
     myClock.tick(60)
 
 
