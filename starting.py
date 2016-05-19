@@ -18,7 +18,7 @@ from datetime import datetime
 screen=display.set_mode((800,600))
 pic=transform.smoothscale(image.load("backg1.png").convert(),(800,600))
 pic2=transform.smoothscale(image.load("background.jpg").convert(),(800,600))
-mePic=transform.smoothscale(image.load("me.jpg").convert(),(40,40))
+sprites=[transform.smoothscale(image.load("me.jpg").convert(),(40,40)),transform.smoothscale(image.load("me2.png").convert(),(40,40))]
 enePic=transform.smoothscale(image.load("enemy.jpg").convert(),(60,60))
 medPic=transform.smoothscale(image.load("medkit.png").convert(),(20,20))
 char=[0,400,-8,True]
@@ -154,12 +154,8 @@ class medKit:
         if self.got==False: #only draws if not collected
             screen.blit(self.pic,(self.x-self.pic.get_width()//2,self.y-self.pic.get_height()//2))
 
-#--START STUFF--
-me=Player(mePic)
-
 #--ENDS GAME--
-def gameEnd():
-    global me
+def gameEnd(me):
     if me.health==0: #also count down torches later
         return True
     return False
@@ -171,6 +167,7 @@ class Branch:
         self.dude=Enemy(enePic,randint(100,700),500)
 """
 def story(me):
+    me=Player(me)
     dude=Enemy(enePic,randint(100,700),500)
     t=Torch()
     kit=[[medKit(medPic,i,500)] for i in range(400,601,100)]
@@ -206,7 +203,7 @@ def story(me):
         screen.blit((text.render(str(t.torchCount()),True,(255,255,255))),(50,80))
         display.flip()
             
-        if gameEnd()==True:
+        if gameEnd(me)==True:
             screen.fill((0,0,0))
             screen.blit((text.render("GAME OVER",True,(255,255,255))),(360,280))
             display.flip()
@@ -268,7 +265,6 @@ def menu():
     menuimg= transform.smoothscale(menuimg, screen.get_size())
     buttons = [Rect(200,y*60+200,150,40) for y in range(3)]
     vals = ["story","instructions","credits"]
-    font.init()
     nlabel1=text.render("Start", 1, (0, 0, 0,))
     nlabel2=text.render("Instructions", 1, (0, 0, 0,))
     nlabel3=text.render("Credits", 1, (0, 0, 0,))
@@ -296,6 +292,28 @@ def menu():
                 
         display.flip()
 
+def mfSelect():
+    global text
+    running=True
+    buttons=[Rect(160*i,200,120,50) for i in range(1,4,2)]
+    labels=["FEMALE","MALE"]
+    while running:
+        for e in event.get():
+            if e.type==QUIT:
+                return "menu"
+        screen.fill((0,0,0))
+        pos=mouse.get_pos()
+        mb=mouse.get_pressed()
+        for b,l in zip(buttons,labels):
+            draw.rect(screen,(255,255,255),b,2)
+            if b.collidepoint(pos):
+                draw.rect(screen,(255,0,0),b,2)
+                if mb[0]==1:
+                    return labels.index(l)
+        screen.blit(text.render(labels[0],True,(255,255,255)),(190,220))
+        screen.blit(text.render(labels[1],True,(255,255,255)),(490,220))
+        display.flip()
+        
 # This is the important part of the example.
 # The idea is we have a variable (page) that keeps
 # track of which page we are one. We give control
@@ -309,6 +327,7 @@ while page != "exit":
     if page == "menu":
         page = menu()
     if page == "story":
+        me=sprites[mfSelect()]
         page = story(me)
     if page == "instructions":
         page = instructions()        
