@@ -111,9 +111,8 @@ def check(obj1,obj2,space):
 #--OBJECTS--    
 class Torch:
     "tracks time since start, makes torchlight effect"
-    def __init__(self):
+    def __init__(self,guy):
         self.start=datetime.now()
-   
     def torchTime(self,start):
         now=datetime.now()
         if now.hour*3600+now.minute*60+now.second-60>=start.hour*3600+start.minute*60+start.second:
@@ -127,12 +126,19 @@ class Torch:
    
     def torch(self,pic,x,y): #takes pic, position and makes transparent black screen with size
                         #of pic and white circle at position
+        if x<0:
+            x=0
+        if x>pic.get_width():
+            x=pic.get_width()
         dark=Surface((pic.get_width(),pic.get_height()))
+        world=Surface((pic.get_width()*2,pic.get_height()))
         dark.set_alpha(100)
         dark.fill((0,0,0))
         draw.circle(dark,(111,111,111),(int(x),int(y)),60)
         draw.circle(dark,(200,200,200),(int(x),int(y)),45)
-        screen.blit(pic,(0,0))
+        for i in range(2):
+            world.blit(pic,(pic.get_width()*i,0))
+        screen.blit(world,(-1*int(x),0))
         screen.blit(dark,(0,0))
         #replace with photoshop and transparent circle pic
 
@@ -163,7 +169,7 @@ def gameEnd():
     
 dude=Enemy(enePic,randint(100,700),500)
 me=Player(mePic)
-t=Torch()
+t=Torch(me)
 kit=medKit(medPic,600,500)
 running=True
 myClock=time.Clock()
