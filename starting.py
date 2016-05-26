@@ -18,8 +18,8 @@ from datetime import datetime
 screen=display.set_mode((1200,600))
 pic=transform.smoothscale(image.load("bricks.jpg"),(1200,600))
 #pic2=transform.smoothscale(image.load("background.jpg").convert(),(800,600))
-sprites=[transform.smoothscale(image.load("me.jpg"),(40,40)),transform.smoothscale(image.load("me2.png"),(40,40))]
-enePic=transform.smoothscale(image.load("enemy.jpg").convert(),(60,60))
+sprites=[transform.smoothscale(image.load("me.png"),(40,40)),transform.smoothscale(image.load("me2.png"),(40,40))]
+enePic=transform.smoothscale(image.load("enemy.png"),(60,60))
 medPic=transform.smoothscale(image.load("medkit.png"),(20,20))
 torchPic=transform.smoothscale(image.load("torch.png"),(20,60))
 char=[0,400,-8,True]
@@ -27,7 +27,9 @@ init()
 text=font.SysFont("Courier",20)
 torchRects=[]
 for i in range(10):
-    torchRects.append((i*20,50))
+    torchRects.append((i*30,50))
+
+#--SPRITES!--#
 
 #--PLAYER--
 class Player: #player object
@@ -37,7 +39,7 @@ class Player: #player object
         char.y=500
         char.vy=0
         char.step=True
-        char.health=100
+        char.health=200
         char.pic=pic
     def move(char): #changes player position according to keyboard input
         
@@ -60,12 +62,12 @@ class Player: #player object
         char.vy+=0.5
       
     def hit(char): #decreases player health
-        char.health-=1
+        char.health-=5
         char.health=min(100,char.health)
             
     def draw(char): #draws player on screen
         #draw.circle(screen,(0,0,255),(int(char.x),int(char.y)),10)
-        screen.blit(char.pic,(char.x-char.pic.get_width()//2,char.y-char.pic.get_height()))
+        screen.blit(char.pic,(char.x-char.pic.get_width()//2,char.y-(char.pic.get_height()-20)))
 
 #--ENEMY--
 class Enemy: #enemy object
@@ -95,9 +97,9 @@ class Enemy: #enemy object
         
     def draw(self):
         #draw.circle(screen,(255,0,0),(int(self.x),int(self.y)),10)
-        screen.blit(self.pic,(self.x-self.pic.get_width()//2,self.y-self.pic.get_height()))
+        screen.blit(self.pic,(self.x-self.pic.get_width()//2,self.y-(self.pic.get_height()-20)))
         
-#--FUNCTION--
+#--FUNCTIONS!--
 def dist(x1,x2,y1,y2): 
     return ((x1-x2)**2 + (y1-y2)**2)**0.5
 
@@ -114,7 +116,7 @@ def check(obj1,obj2,space):
 """
 #--MAP--
        
-#--OBJECTS--    
+#--OBJECTS!--    
 class Torch:
     "tracks time since start, makes torchlight effect"
     def __init__(self):
@@ -161,13 +163,13 @@ class medKit:
         if self.got==False: #only draws if not collected
             screen.blit(self.pic,(self.x-self.pic.get_width()//2,self.y-self.pic.get_height()//2))
 
-#--ENDS GAME--
+#--ENDS GAME!--
 def gameEnd(me,torch):
     if me.health==0 or torch.torchCount()/10>10: 
         return True
     return False
    
-#--MENU--
+#--MENU!--
 """
 class Branch:
     def __init__(self):
@@ -178,7 +180,8 @@ def story(me):
     dude=Enemy(enePic,randint(100,700),500)
     t=Torch()
     kit=[[medKit(medPic,i,500,me)] for i in range(400,601,100)]
-    hbar=(560,50,200,20)
+    hbar=(560,50,me.health,20)
+    backh=hbar
     myClock=time.Clock()
     running=True    
     while running:
@@ -190,14 +193,15 @@ def story(me):
         
         me.move()
         dude.move(me)
+        
         for k in kit:
             k[0].gain(me)
             
         if checkPic(me,me.pic,dude,dude.pic)==True:
             dude.x=dude.x-50
             me.hit()
-            hbar=(560,50,me.health,20)
-                
+            
+        hbar=(560,50,me.health,20)                
         t.torch(pic,me.x,me.y)    
         me.draw()
         dude.draw()
@@ -205,7 +209,7 @@ def story(me):
             k[0].draw()
         for i in range(10-t.torchCount()//10):
             screen.blit(torchPic,torchRects[i])
-        draw.rect(screen,(255,255,255),(50,50,200,20))
+        draw.rect(screen,(255,255,255),backh,4)
         draw.rect(screen,(255,0,0),hbar)
         screen.blit((text.render(str(10-t.torchCount()%10),True,(255,255,255))),(740,80)) #displays count down in seconds to when a torch is used up
         display.flip()
@@ -247,22 +251,7 @@ def credit():
 
         display.flip()
     return "menu"
-    
-"""
-def story():
-    running = True
-    story = image.load("story.png")
-    story = transform.smoothscale(story, screen.get_size())
-    screen.blit(story,(0,0))
-    while running:
-        for evnt in event.get():          
-            if evnt.type == QUIT:
-                running = False
-        if key.get_pressed()[27]: running = False
-        display.flip()
-    return "menu"
-"""    
-
+       
 
 def menu():
     global text
@@ -299,7 +288,7 @@ def menu():
                 
         display.flip()
 
-def mfSelect():
+def mfSelect(): #player can select gender for sprite after start on menu, before actual game loop
     global text
     running=True
     buttons=[Rect(160*i,200,120,50) for i in range(1,4,2)]
@@ -320,13 +309,8 @@ def mfSelect():
         screen.blit(text.render(labels[0],True,(255,255,255)),(190,220))
         screen.blit(text.render(labels[1],True,(255,255,255)),(490,220))
         display.flip()
-        
-# This is the important part of the example.
-# The idea is we have a variable (page) that keeps
-# track of which page we are one. We give control
-# of the program to a function until it is done and
-# the program returns the new page it should be on.
 
+#--PAGE LOOP!--
 running = True
 OUTLINE = (150,50,30)
 page = "menu"
