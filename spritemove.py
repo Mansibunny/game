@@ -7,11 +7,10 @@ This example demonstrates simple sprite animation without using any "fancy" tech
 from pygame import *
 from math import *
 from random import randint
-size = width, height = 800, 600
+size = width, height = 800, 500
 screen = display.set_mode(size)
 init()
-back = image.load("posslevel14.jpg")
-backPic=transform.smoothscale(back,(3000,600))
+backPic = image.load("back.jpg")
 maskPic = image.load("mask.png")
 GREEN = (0,255,0)
 
