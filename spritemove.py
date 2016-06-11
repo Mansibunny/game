@@ -7,10 +7,11 @@ This example demonstrates simple sprite animation without using any "fancy" tech
 from pygame import *
 from math import *
 from random import randint
-size = width, height = 800, 500
+size = width, height = 800, 600
 screen = display.set_mode(size)
 init()
-backPic = image.load("back.jpg")
+back = image.load("posslevel14.jpg")
+backPic=transform.smoothscale(back,(3000,600))
 maskPic = image.load("mask.png")
 GREEN = (0,255,0)
 
@@ -27,8 +28,10 @@ def moveDude(dude):
         moveUp(dude,-dude[VY])
     elif dude[VY] > 0:
         moveDown(dude,dude[VY])
-        
-    if keys[K_RIGHT] and dude[X] < 3400:
+    
+    if keys[K_SPACE] and dude[ONGROUND]:
+        dude[VY] = -14    
+    elif keys[K_RIGHT] and dude[X] < 3400:
         newMove = RIGHT
         moveRight(dude,10)
         climb(dude)
@@ -37,8 +40,9 @@ def moveDude(dude):
         newMove = LEFT
         moveLeft(dude,10)
         climb(dude)
-    elif keys[K_SPACE] and dude[ONGROUND]:
-        dude[VY] = -14
+    
+        
+        
 
     else:
         frame = 0
